@@ -1,0 +1,31 @@
+Analysis Results Old System:
+avg_waiting_type1: 10.228343913576104
+max_waiting_type1: 14.88246532888889
+avg_waiting_type2: 23.578120056270603
+max_waiting_type2: 49.999971771666665
+idle_time_mri1: 6.783333333333333
+idle_time_mri2: 0.4857142857142857
+avg_appointments: PatientType
+Type 1    16.400000
+Type 2     8.857143
+Name: Counts, dtype: float64
+total_appointments: Type 1    492
+Type 2    310
+Name: PatientType, dtype: int64
+
+
+Analysis Results New System:
+avg_waiting_type1: 12.228999103684353
+max_waiting_type1: 21.499922460277777
+avg_waiting_type2: 12.082966631697598
+max_waiting_type2: 21.499758609444445
+idle_time_mri1: 1.078125
+idle_time_mri2: 1.078125
+avg_appointments: PatientType
+Type 1    15.78125
+Type 2     9.68750
+Name: Counts, dtype: float64
+total_appointments: Type 1    505
+Type 2    310
+Name: PatientType, dtype: int64
+​

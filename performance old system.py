@@ -110,7 +110,7 @@ def calculate_waitingtime_1(call_time, scheduled_time):
 
 
 def calculate_waitingtime_2(scheduled_dfs):
-    # Computes average and maximum waiting times between scheduled and actual scan
+    # Computes average and maximum waiting times
     waiting_times = [calculate_waitingtime_1(row['CallDateTime'], row['ScheduledTime']) for df in scheduled_dfs for
                      _, row in df.iterrows()]
     return (sum(waiting_times) / len(waiting_times) if waiting_times else 0,

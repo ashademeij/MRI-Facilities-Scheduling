@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[2]:
-
-
 import numpy as np
 
 import pandas as pd
@@ -30,7 +24,7 @@ beta_type2 = 0.0532  # Scale parameter for Type 2, based on part 2 (Gamma distri
 
 # Slot times of MRI scans for both types
 
-slot_time_type1 = 0.5  # Scan duration for Type 1 patients (in hours)
+slot_time_type1 = 0.5833  # Scan duration for Type 1 patients (in hours)
 
 slot_time_type2 = 1.0  # Scan duration for Type 2 patients (in hours)
 
@@ -156,9 +150,9 @@ def scans_schedule(df):
 
     mri1_available = mri2_available = datetime.min
 
-    scheduled_mri1 = []
+    schedule_mri1 = []
 
-    scheduled_mri2 = []
+    schedule_mri2 = []
 
  
 
@@ -172,7 +166,7 @@ def scans_schedule(df):
 
             scheduled_time = get_available_slot(call_time, mri1_available, scan_duration)
 
-            scheduled_mri1.append((row['CallDateTime'], row['PatientType'], scheduled_time))
+            schedule_mri1.append((row['CallDateTime'], row['PatientType'], scheduled_time))
 
             mri1_available = scheduled_time + timedelta(hours=scan_duration)
 
@@ -180,13 +174,13 @@ def scans_schedule(df):
 
             scheduled_time = get_available_slot(call_time, mri2_available, scan_duration)
 
-            scheduled_mri2.append((row['CallDateTime'], row['PatientType'], scheduled_time))
+            schedule_mri2.append((row['CallDateTime'], row['PatientType'], scheduled_time))
 
             mri2_available = scheduled_time + timedelta(hours=scan_duration)
 
-    return (pd.DataFrame(scheduled_mri1, columns=['CallDateTime', 'PatientType', 'ScheduledTime']),
+    return (pd.DataFrame(schedule_mri1, columns=['CallDateTime', 'PatientType', 'ScheduledTime']),
 
-            pd.DataFrame(scheduled_mri2, columns=['CallDateTime', 'PatientType', 'ScheduledTime']))
+            pd.DataFrame(schedule_mri2, columns=['CallDateTime', 'PatientType', 'ScheduledTime']))
 
  
 
@@ -238,7 +232,28 @@ def calculate_waitingtime_2(scheduled_dfs):
 
             max(waiting_times) if waiting_times else 0)
 
+
+
+def calculate_average_appointments(scheduled_dfs):
+
+    # Calculates average number of appointments per day for both types
+
+    combined_df = pd.concat(scheduled_dfs)
+
+    combined_df['Date'] = combined_df['ScheduledTime'].dt.date
+
+    daily_counts = combined_df.groupby(['Date', 'PatientType']).size().reset_index(name='Counts')
+
+    return daily_counts.groupby('PatientType')['Counts'].mean()
+
  
+ 
+
+def calculate_total_appointments(df):
+
+    # Returns total number of appointments scheduled by patient type
+
+    return df['PatientType'].value_counts() 
 
  
 
@@ -271,32 +286,6 @@ def calculate_idle_time(scheduled_df):
         'ScheduledTime'].dt.date.min()).days + 1
 
     return (total_idle_time_seconds / 3600) / operational_days if operational_days > 0 else 0
-
- 
-
- 
-
-def calculate_average_appointments(scheduled_dfs):
-
-    # Calculates average number of appointments per day for both types
-
-    combined_df = pd.concat(scheduled_dfs)
-
-    combined_df['Date'] = combined_df['ScheduledTime'].dt.date
-
-    daily_counts = combined_df.groupby(['Date', 'PatientType']).size().reset_index(name='Counts')
-
-    return daily_counts.groupby('PatientType')['Counts'].mean()
-
- 
-
- 
-
-def calculate_total_appointments(df):
-
-    # Returns total number of appointments scheduled by patient type
-
-    return df['PatientType'].value_counts()
 
  
 
@@ -375,10 +364,3 @@ print("\nAnalysis Results:")
 for key, value in results.items():
 
     print(f"{key}: {value}")
-
-
-# In[ ]:
-
-
-
-

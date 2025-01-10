@@ -1,3 +1,4 @@
+
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -74,22 +75,22 @@ def get_available_slot(call_time, machine_available, scan_duration):
 def scans_schedule(df):
     # Schedule scans based on patient calls and machine availability
     mri1_available = mri2_available = datetime.min
-    scheduled_type1 = []
-    scheduled_type2 = []
+    schedule_MRI1 = []
+    schedule_MRI2 = []
 
     for _, row in df.iterrows():
         call_time = row['CallDateTime']
         if row['PatientType'] == 'Type 1':
             scheduled_time = get_available_slot(call_time, mri1_available, slot_time_type1)
-            scheduled_type1.append((row['CallDateTime'], row['PatientType'], scheduled_time))
+            schedule_MRI1.append((row['CallDateTime'], row['PatientType'], scheduled_time))
             mri1_available = scheduled_time + timedelta(hours=slot_time_type1)
         else:
             scheduled_time = get_available_slot(call_time, mri2_available, slot_time_type2)
-            scheduled_type2.append((row['CallDateTime'], row['PatientType'], scheduled_time))
+            schedule_MRI2.append((row['CallDateTime'], row['PatientType'], scheduled_time))
             mri2_available = scheduled_time + timedelta(hours=slot_time_type2)
 
-    return (pd.DataFrame(scheduled_type1, columns=['CallDateTime', 'PatientType', 'ScheduledTime']),
-            pd.DataFrame(scheduled_type2, columns=['CallDateTime', 'PatientType', 'ScheduledTime']))
+    return (pd.DataFrame(schedule_MRI1, columns=['CallDateTime', 'PatientType', 'ScheduledTime']),
+            pd.DataFrame(schedule_MRI2, columns=['CallDateTime', 'PatientType', 'ScheduledTime']))
 
 
 def calculate_waitingtime_1(call_time, scheduled_time):
@@ -117,6 +118,19 @@ def calculate_waitingtime_2(scheduled_dfs):
             max(waiting_times) if waiting_times else 0)
 
 
+def calculate_total_appointments(df):
+    # Returns total number of appointments scheduled by patient type
+    return df['PatientType'].value_counts()
+
+
+def calculate_average_appointments(scheduled_dfs):
+    # Calculates average number of appointments per day for both types
+    combined_df = pd.concat(scheduled_dfs)
+    combined_df['Date'] = combined_df['ScheduledTime'].dt.date
+    daily_counts = combined_df.groupby(['Date', 'PatientType']).size().reset_index(name='Counts')
+    return daily_counts.groupby('PatientType')['Counts'].mean()
+
+
 def calculate_idle_time(scheduled_df):
     # Computes the total idle time for an MRI machine
     last_scan_end = datetime.min
@@ -132,19 +146,6 @@ def calculate_idle_time(scheduled_df):
     operational_days = (scheduled_df['ScheduledTime'].dt.date.max() - scheduled_df[
         'ScheduledTime'].dt.date.min()).days + 1
     return (total_idle_time_seconds / 3600) / operational_days if operational_days > 0 else 0
-
-
-def calculate_average_appointments(scheduled_dfs):
-    # Calculates average number of appointments per day for both types
-    combined_df = pd.concat(scheduled_dfs)
-    combined_df['Date'] = combined_df['ScheduledTime'].dt.date
-    daily_counts = combined_df.groupby(['Date', 'PatientType']).size().reset_index(name='Counts')
-    return daily_counts.groupby('PatientType')['Counts'].mean()
-
-
-def calculate_total_appointments(df):
-    # Returns total number of appointments scheduled by patient type
-    return df['PatientType'].value_counts()
 
 
 def performance_scans(df):

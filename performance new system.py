@@ -222,7 +222,7 @@ def calculate_waitingtime_1(call_time, scheduled_time):
 
 def calculate_waitingtime_2(scheduled_dfs):
 
-    # Computes average and maximum waiting times between scheduled and actual scan
+    # Computes average and maximum waiting time per day for both types
 
     waiting_times = [calculate_waitingtime_1(row['CallDateTime'], row['ScheduledTime']) for df in scheduled_dfs for
 
